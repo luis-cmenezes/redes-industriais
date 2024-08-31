@@ -1,0 +1,61 @@
+#include <Wire.h>
+
+const int valvePin = 8; // pino para controlar a válvula
+unsigned long startTime = 0;
+bool restartCount = false;
+
+void setup() {
+  Wire.begin(); // inicia I2C como mestre
+  Serial.begin(9600); // inicia comunicação serial
+  pinMode(valvePin, OUTPUT);
+  digitalWrite(valvePin, LOW); // garante que a válvula esteja inicialmente desligada
+}
+
+void loop() {
+  Wire.requestFrom(2, 3); // solicita 3 bytes do escravo com endereço 2
+
+  if (Wire.available() == 3) // verifica se recebeu 3 bytes
+  { 
+  	int buttonState = Wire.read();
+    	int sensorA0State = Wire.read();
+    	int sensorA1State = Wire.read();
+
+    	// Exibe os dados recebidos
+	Serial.print("Button: ");
+	Serial.print(buttonState);
+	Serial.print(" SensorA0: ");
+	Serial.print(sensorA0State);
+	Serial.print(" SensorA1: ");
+	Serial.println(sensorA1State);
+	
+	// Avanço do cilindro para botão pressionado e sensor recuado
+	if (buttonState && sensorA0State)
+	{
+        	digitalWrite(valvePin, HIGH); // Ativa a válvula para avançar o cilindro
+		restartCount = true;
+	}
+
+	// Inicio da contagem para recuo quando o cilindro está no final do avanço
+	if (sensorA1State && restartCount)
+	{
+		startTime = millis(); // Inicia a contagem do tempo
+		restartCount = false;
+	}
+	
+	// Reinicio da contagem para recuo caso o botão seja repressionado com cilindro avançado
+	if((sensorA1State && buttonState)
+	{
+		restartCount = true;
+	}
+
+	// Recuo para fim de timer
+	if (millis() - startTime >= 3000) {
+        	digitalWrite(valvePin, LOW);
+        }
+   }
+	
+
+   
+
+  delay(50); // pequena pausa para estabilizar leitura
+}

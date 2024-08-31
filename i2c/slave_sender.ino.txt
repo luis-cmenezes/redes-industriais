@@ -1,0 +1,30 @@
+#include <Wire.h>
+
+const int buttonPin = 2;
+const int sensorA0Pin = 3;
+const int sensorA1Pin = 5;
+
+void setup() {
+  Wire.begin(2); // inicia I2C com endereço 2
+  Wire.onRequest(requestEvent); // registra o evento de solicitação
+  pinMode(buttonPin, INPUT);
+  pinMode(sensorA0Pin, INPUT);
+  pinMode(sensorA1Pin, INPUT);
+}
+
+void loop() {
+  // Não faz nada no loop, apenas aguarda solicitações
+  delay(100);
+}
+
+void requestEvent() {
+  // Leitura dos sensores
+  int buttonState = digitalRead(buttonPin);
+  int sensorA0State = digitalRead(sensorA0Pin);
+  int sensorA1State = digitalRead(sensorA1Pin);
+
+  // Envia os estados dos sensores (um byte por sensor)
+  Wire.write(buttonState);
+  Wire.write(sensorA0State);
+  Wire.write(sensorA1State);
+}
